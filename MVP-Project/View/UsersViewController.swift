@@ -10,10 +10,11 @@ import UIKit
 class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, PresenterDelegate {
     
     let presenter = Presenter()
-    var users = [User]()
+    var users = User(data: [UserInstance]())
     
     @IBOutlet weak var tableView: UITableView!
     override func viewDidLoad() {
+        super.viewDidLoad()
         title = "Users"
         tableView.delegate = self
         tableView.dataSource = self
@@ -21,12 +22,10 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
         presenter.delegate = self
         
         presenter.getUsers()
-        
-        
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return users.count
+        return users.data.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -35,14 +34,19 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
             return UITableViewCell()
         }
         
-        cell.fullName.text = "\(users[indexPath.row].data[indexPath.row].firstName) \(users[indexPath.row].data[indexPath.row].lastName)"
-        cell.emailLabel.text = users[indexPath.row].data[indexPath.row].email
-        //cell.userImage.image = users[indexPath.row].data[indexPath.row].image
+        cell.fullName.text = "\(users.data[indexPath.row].firstName) \(users.data[indexPath.row].lastName)"
+        cell.emailLabel.text = users.data[indexPath.row].email
         
         return cell
     }
     
-    func presentUsers(users: [User]) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        presenter.delegate?.presentDetails(user: users, index: indexPath.row)
+    }
+    
+    //MARK:- Delegate Protocol Functions
+    
+    func presentUsers(users: User) {
         self.users = users
         DispatchQueue.main.async {
             self.tableView.reloadData()
@@ -50,8 +54,11 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
         print("users here: \(users)")
     }
     
-    func presentDetails(user: User) {
-        
+    func presentDetails(user: User, index: Int) {
+            let destination = storyboard?.instantiateViewController(identifier: "DetailsVC") as! MoreDetailsViewController
+            destination.user = user
+            destination.index = index
+            navigationController?.pushViewController(destination, animated: true)
     }
 }
 
